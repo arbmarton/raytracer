@@ -27,19 +27,19 @@ Renderer::Renderer()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-    //for (int i = 0; i < 10; ++i)
-    //{
-    //    spheres.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f) });
-    //}
+    for (int i = 0; i < 10; ++i)
+    {
+        spheres.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f) });
+    }
 
-    //for (int i = 0; i < 10; ++i)
-    //{
-    //    lights.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), 100 });
-    //}
+    for (int i = 0; i < 10; ++i)
+    {
+        lights.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), 100 });
+    }
 
-    spheres.push_back({ {0,0,-5}, {1,0,0}, 1.0f });
-    spheres.push_back({ {3,0,-5}, {0,0,1}, 1.0f });
-    lights.push_back({ {0,0,-10}, {1,1,1}, 100 });
+    //spheres.push_back({ {0,0,-5}, {1,0,0}, 1.0f });
+    //spheres.push_back({ {3,0,-5}, {0,0,1}, 1.0f });
+    //lights.push_back({ {0,0,-10}, {1,1,1}, 100 });
 }
 
 glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
@@ -176,48 +176,14 @@ GLuint Renderer::renderToTextureParallel()
     const glm::vec3 xOffset = camera_plane_right * (ScreenDescriptor::WINDOW_WIDTH / 2.0f) * -1.0f;
     const glm::vec3 yOffset = camera_plane_up * (ScreenDescriptor::WINDOW_HEIGHT / 2.0f) * -1.0f;
 
-    for (uint32_t i = 0; i < ScreenDescriptor::WINDOW_WIDTH; ++i)
-    {
-        const glm::vec3 xVec = float(i) * camera_plane_right + xOffset;
-        for (uint32_t j = 0; j < ScreenDescriptor::WINDOW_HEIGHT; ++j)
-        {
-            const glm::vec3 yVec = float(j) * camera_plane_up + yOffset;
-            const glm::vec3 curr = camera_plane_center + xVec + yVec;
-
-            const glm::vec3 rayDirection = glm::normalize(curr - Camera::intance().getPosition());
-
-            const Ray ray{ Camera::intance().getPosition(), rayDirection };
-
-            const glm::vec3 color = Renderer::instance().trace(ray, 1);
-
-            const unsigned int index = j * 3 * ScreenDescriptor::WINDOW_WIDTH + i * 3;
-            imgArray[index] = unsigned char(std::min(color.r * 255, 255.0f));
-            imgArray[index + 1] = unsigned char(std::min(color.g * 255, 255.0f));
-            imgArray[index + 2] = unsigned char(std::min(color.b * 255, 255.0f));
-        }
-    }
-
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ScreenDescriptor::WINDOW_WIDTH, ScreenDescriptor::WINDOW_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, imgArray);
-    glGenerateMipmap(texture);
-
     const auto lambda = [camera_plane_right, camera_plane_up, camera_plane_center, xOffset, yOffset, this](const size_t thread_id)
     {
-        for (uint32_t i = 0; i < ScreenDescriptor::WINDOW_WIDTH; ++i)
+        for (size_t i = thread_id; i < ScreenDescriptor::WINDOW_HEIGHT; i += std::thread::hardware_concurrency())
         {
-            const glm::vec3 xVec = float(i) * camera_plane_right + xOffset;
-            for (uint32_t j = 0; j < ScreenDescriptor::WINDOW_HEIGHT; ++j)
+            const glm::vec3 xVec = float(i) * camera_plane_up + yOffset;
+            for (uint32_t j = 0; j < ScreenDescriptor::WINDOW_WIDTH; ++j)
             {
-                const glm::vec3 yVec = float(j) * camera_plane_up + yOffset;
+                const glm::vec3 yVec = float(j) * camera_plane_right + xOffset;
                 const glm::vec3 curr = camera_plane_center + xVec + yVec;
 
                 const glm::vec3 rayDirection = glm::normalize(curr - Camera::intance().getPosition());
@@ -226,7 +192,7 @@ GLuint Renderer::renderToTextureParallel()
 
                 const glm::vec3 color = Renderer::instance().trace(ray, 1);
 
-                const unsigned int index = j * 3 * ScreenDescriptor::WINDOW_WIDTH + i * 3;
+                const unsigned int index = uint32_t(i) * 3 * ScreenDescriptor::WINDOW_WIDTH + j * 3;
                 imgArray[index] = unsigned char(std::min(color.r * 255, 255.0f));
                 imgArray[index + 1] = unsigned char(std::min(color.g * 255, 255.0f));
                 imgArray[index + 2] = unsigned char(std::min(color.b * 255, 255.0f));
@@ -246,22 +212,18 @@ GLuint Renderer::renderToTextureParallel()
         result.get();
     }
 
-    //std::vector< std::future<int> > results;
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
-    //for (int i = 0; i < 8; ++i) {
-    //    results.emplace_back(
-    //        pool.enqueue([i] {
-    //        std::cout << "hello " << i << std::endl;
-    //        std::this_thread::sleep_for(std::chrono::seconds(1));
-    //        std::cout << "world " << i << std::endl;
-    //        return i * i;
-    //    })
-    //    );
-    //}
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    //for (auto&& result : results)
-    //    std::cout << result.get() << ' ';
-    //std::cout << std::endl;
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ScreenDescriptor::WINDOW_WIDTH, ScreenDescriptor::WINDOW_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, imgArray);
+    glGenerateMipmap(texture);
 
     return texture;
 }
@@ -282,7 +244,8 @@ void Renderer::render()
     std::fill(imgArray, imgArray + ScreenDescriptor::WINDOW_WIDTH * ScreenDescriptor::WINDOW_HEIGHT * 3 - 1, unsigned char(0));
 
     // Draw
-    GLuint text = renderToTexture();
+    //GLuint text = renderToTexture();
+    GLuint text = renderToTextureParallel();
     drawTextureToScreen(text);
 
     // Delete
