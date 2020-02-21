@@ -67,7 +67,8 @@ private:
 
     Shader quadshader;
 
-    unsigned char* imgArray = new unsigned char[ScreenDescriptor::WINDOW_WIDTH * ScreenDescriptor::WINDOW_HEIGHT * 3];
+    constexpr static int pixelcount = ScreenDescriptor::WINDOW_WIDTH * ScreenDescriptor::WINDOW_HEIGHT * 3;
+    unsigned char* imgArray = new unsigned char[pixelcount];
 
     ThreadPool pool{ std::thread::hardware_concurrency() };
 };

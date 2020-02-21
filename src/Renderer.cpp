@@ -241,7 +241,7 @@ void Renderer::render()
     // Clear
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    std::fill(imgArray, imgArray + ScreenDescriptor::WINDOW_WIDTH * ScreenDescriptor::WINDOW_HEIGHT * 3 - 1, unsigned char(0));
+    std::fill(imgArray, imgArray + pixelcount - 1, unsigned char(0));
 
     // Draw
     //GLuint text = renderToTexture();
