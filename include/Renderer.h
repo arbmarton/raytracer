@@ -38,14 +38,15 @@ public:
     }
 
     glm::vec3 trace(const Ray& ray, const int recursionDepth);
-    std::pair<Sphere*, float> intersect(const Ray& ray);
+    IntersectionInfo intersect(const Ray& ray);
 
     GLuint renderToTexture();
     GLuint renderToTextureParallel();
     void drawTextureToScreen(const GLuint texture);
     void render();
 
-    std::vector<Sphere> spheres;
+    //std::vector<Sphere> spheres;
+    std::vector<Object*> objects;
     std::vector<LightSource> lights;
 
 private:

@@ -29,7 +29,7 @@ Renderer::Renderer()
 
     //for (int i = 0; i < 10; ++i)
     //{
-    //    spheres.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f) });
+    //    objects.push_back(new Sphere{ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f) });
     //}
 
     //for (int i = 0; i < 10; ++i)
@@ -37,8 +37,8 @@ Renderer::Renderer()
     //    lights.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), 100 });
     //}
 
-    spheres.push_back(Sphere({0,0,-5}, {1,0,0}, 1.0f, 0.5f, 0.5f, 0.5f));
-    spheres.push_back(Sphere({3,0,-5}, {0,0,1}, 1.0f, 0.5f, 0.5f, 0.5f));
+    objects.push_back(new Sphere({0,0,-5}, {1,0,0}, 1.0f, 0.5f, 0.5f, 0.5f));
+    objects.push_back(new Sphere({3,0,-5}, {0,0,1}, 1.0f, 0.5f, 0.5f, 0.5f));
     lights.push_back({ {0,0,-10}, {1,1,1}, 100 });
 }
 
@@ -49,18 +49,18 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
         return ambientLight;
     }
 
-    std::pair<Sphere*, float> found = intersect(ray);
-    if (!found.first)
+    IntersectionInfo found = intersect(ray);
+    if (!found.obj)
     {
         return ambientLight;
     }
 
-    const glm::vec3 intersectionPoint = ray.origin + ray.direction * found.second;
-    const glm::vec3 sphereNormal = glm::normalize(intersectionPoint - found.first->pos);
+    const glm::vec3 intersectionPoint = ray.origin + ray.direction * found.distance;
+    const glm::vec3 sphereNormal = found.obj->getNormal(ray, found);  // glm::normalize(intersectionPoint - found.obj->pos);
 
     // TODO: emission
 
-    glm::vec3 ambient = found.first->ka * ambientLight;
+    glm::vec3 ambient = found.obj->ka * ambientLight;
     glm::vec3 directLight{ 0, 0, 0 };
     glm::vec3 reflectedLight{ 0, 0, 0 };
     glm::vec3 refractedLight{ 0, 0, 0 };
@@ -72,8 +72,8 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
 
         const float lightDistance = glm::length(lights[i].position - intersectionPoint);
 
-        std::pair<Sphere*, float> blockingSphere = intersect(toLightRay);
-        if (!blockingSphere.first || blockingSphere.second > lightDistance)
+        IntersectionInfo blockingSphere = intersect(toLightRay);
+        if (!blockingSphere.obj || blockingSphere.distance> lightDistance)
         {
             const float dotproduct = glm::dot(sphereNormal, toLightDir);
 
@@ -82,43 +82,41 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
                 continue;
             }
 
-            const glm::vec3 color = lights[i].color * found.first->color;
+            const glm::vec3 color = lights[i].color * found.obj->getColor(ray, found);
             directLight += color * (lights[i].intensity * 10 * dotproduct / (fourPI * lightDistance * lightDistance));
         }
     }
 
-    if (found.first->kr > 0)
+    if (found.obj->kr > 0)
     {
         const glm::vec3 reflectionDir = utilities::calculateReflectionDirection(ray, sphereNormal);
         const Ray reflectedRay{ intersectionPoint + reflectionDir * 0.01f, reflectionDir };
-        reflectedLight = found.first->kr * trace(reflectedRay, recursionDepth + 1);
+        reflectedLight = found.obj->kr * trace(reflectedRay, recursionDepth + 1);
     }
 
-    if (found.first->kt > 0)
+    if (found.obj->kt > 0)
     {
         const glm::vec3 refractionDir = utilities::calculateRefractionDirection(ray, sphereNormal, 1.0f / 1.52f);
         const Ray refractedRay{ intersectionPoint + refractionDir * 0.01f, refractionDir };
-        refractedLight = found.first->kt * trace(refractedRay, recursionDepth + 1);
+        refractedLight = found.obj->kt * trace(refractedRay, recursionDepth + 1);
     }
 
     return ambient + directLight + reflectedLight + refractedLight;
 }
 
-std::pair<Sphere*, float> Renderer::intersect(const Ray& ray)
+IntersectionInfo Renderer::intersect(const Ray& ray)
 {
-    Sphere* ret = nullptr;
-    std::optional<float> val = std::numeric_limits<float>::max();
-    for (int i = 0; i < spheres.size(); ++i)
+    IntersectionInfo ret{ nullptr, std::numeric_limits<float>::max() };
+    for (int i = 0; i < objects.size(); ++i)
     {
-        auto temp = utilities::calculateSphereIntersectionDistance(ray, spheres[i]);
-        if (temp && temp < val)
+        const IntersectionInfo temp = objects[i]->intersect(ray);
+        if (temp.obj && temp.distance < ret.distance)
         {
-            val = temp;
-            ret = &spheres[i];
+            ret = temp;
         }
     }
 
-    return { ret, *val };
+    return ret;
 }
 
 GLuint Renderer::renderToTexture()
