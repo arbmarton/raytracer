@@ -22,6 +22,7 @@ set(THIRDPARTY_HEADERS
 set(HEADER_FILES
 	include/Camera.h
 	include/LightSource.h
+	include/Object.h
 	include/Ray.h
 	include/Renderer.h
 	include/Shader.h

@@ -100,7 +100,7 @@ std::optional<float> calculateSphereIntersectionDistance(const Ray& ray, const S
 
 glm::vec3 calculateReflectionDirection(const glm::vec3& ray, const glm::vec3& normal)
 {
-    const float cosAlpha = glm::dot(ray, normal) / (glm::length(ray) * glm::length(normal)) * -1;  // multiply by -1 because the ray is pointing in, not out?
+    const float cosAlpha = glm::dot(-ray, normal) / (glm::length(ray) * glm::length(normal));
     return ray + 2.0f * normal * cosAlpha;
 }
 
@@ -111,9 +111,18 @@ glm::vec3 calculateReflectionDirection(const Ray& ray, const glm::vec3& normal)
 
 glm::vec3 calculateRefractionDirection(const glm::vec3& ray, const glm::vec3& normal, const float nu)
 {
-    const float cosAlpha = glm::dot(ray, normal) / (glm::length(ray) * glm::length(normal)) * -1;
-    const float sqr = sqrt(1 - (1 - cosAlpha * cosAlpha) / (nu * nu));
-    return (ray / nu) - normal * (cosAlpha / nu - sqr);
+    const float cosAlpha = glm::dot(ray, normal) / (glm::length(ray) * glm::length(normal));
+    const float c = (1 - cosAlpha * cosAlpha) * (nu * nu);
+
+    // total internal reflection
+    if (c > 1.0f)
+    {
+        return { 0,0,0 };
+    }
+
+    const float sqr = sqrt(1 - c);
+
+    return (ray * nu) + normal * (cosAlpha * nu - sqr);
 }
 
 glm::vec3 calculateRefractionDirection(const Ray& ray, const glm::vec3& normal, const float nu)

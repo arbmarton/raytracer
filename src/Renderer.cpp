@@ -27,19 +27,19 @@ Renderer::Renderer()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-    for (int i = 0; i < 10; ++i)
-    {
-        spheres.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f) });
-    }
+    //for (int i = 0; i < 10; ++i)
+    //{
+    //    spheres.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f) });
+    //}
 
-    for (int i = 0; i < 10; ++i)
-    {
-        lights.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), 100 });
-    }
+    //for (int i = 0; i < 10; ++i)
+    //{
+    //    lights.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), 100 });
+    //}
 
-    //spheres.push_back({ {0,0,-5}, {1,0,0}, 1.0f });
-    //spheres.push_back({ {3,0,-5}, {0,0,1}, 1.0f });
-    //lights.push_back({ {0,0,-10}, {1,1,1}, 100 });
+    spheres.push_back(Sphere({0,0,-5}, {1,0,0}, 1.0f, 0.5f, 0.5f, 0.5f));
+    spheres.push_back(Sphere({3,0,-5}, {0,0,1}, 1.0f, 0.5f, 0.5f, 0.5f));
+    lights.push_back({ {0,0,-10}, {1,1,1}, 100 });
 }
 
 glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
@@ -96,7 +96,7 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
 
     if (found.first->kt > 0)
     {
-        const glm::vec3 refractionDir = utilities::calculateRefractionDirection(ray, sphereNormal, 0.5f);
+        const glm::vec3 refractionDir = utilities::calculateRefractionDirection(ray, sphereNormal, 1.0f / 1.52f);
         const Ray refractedRay{ intersectionPoint + refractionDir * 0.01f, refractionDir };
         refractedLight = found.first->kt * trace(refractedRay, recursionDepth + 1);
     }
