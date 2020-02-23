@@ -2,8 +2,8 @@
 #include "Utilities.h"
 #include "Camera.h"
 #include "Ray.h"
-
-
+#include "Plane.h"
+#include "Sphere.h"
 
 Renderer::Renderer()
     : quadshader(Shader(utilities::getShaderPath("quad.vs"), utilities::getShaderPath("quad.fs")))
@@ -27,19 +27,21 @@ Renderer::Renderer()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-    //for (int i = 0; i < 10; ++i)
-    //{
-    //    objects.push_back(new Sphere{ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f) });
-    //}
+    for (int i = 0; i < 10; ++i)
+    {
+        objects.push_back(new Sphere{ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f),
+                                      0.5f, 0.5f, 0.5f });
+    }
 
-    //for (int i = 0; i < 10; ++i)
-    //{
-    //    lights.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), 100 });
-    //}
+    for (int i = 0; i < 10; ++i)
+    {
+        lights.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), 100 });
+    }
 
-    objects.push_back(new Sphere({0,0,-5}, {1,0,0}, 1.0f, 0.5f, 0.5f, 0.5f));
-    objects.push_back(new Sphere({3,0,-5}, {0,0,1}, 1.0f, 0.5f, 0.5f, 0.5f));
-    lights.push_back({ {0,0,-10}, {1,1,1}, 100 });
+    //objects.push_back(new Sphere({ 0, 0, -5 }, { 1, 0, 0 }, 1.0f, 0.5f, 0.5f, 0.5f));
+    //objects.push_back(new Sphere({ 3, 0, -5 }, { 0, 0, 1 }, 1.0f, 0.5f, 0.5f, 0.5f));
+    //objects.push_back(new Plane({ 0, -5, 0 }, { 0, 1, 0 }, { 1, 1, 1 }, 1.0f, 0.0f, 0.0f));
+    //lights.push_back({ { 0, 0, 0 }, { 1, 1, 1 }, 100 });
 }
 
 glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
@@ -56,7 +58,7 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
     }
 
     const glm::vec3 intersectionPoint = ray.origin + ray.direction * found.distance;
-    const glm::vec3 sphereNormal = found.obj->getNormal(ray, found);  // glm::normalize(intersectionPoint - found.obj->pos);
+    const glm::vec3 sphereNormal = found.obj->getNormal(ray, found);
 
     // TODO: emission
 
@@ -73,7 +75,7 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
         const float lightDistance = glm::length(lights[i].position - intersectionPoint);
 
         IntersectionInfo blockingSphere = intersect(toLightRay);
-        if (!blockingSphere.obj || blockingSphere.distance> lightDistance)
+        if (!blockingSphere.obj || blockingSphere.distance > lightDistance)
         {
             const float dotproduct = glm::dot(sphereNormal, toLightDir);
 
@@ -83,7 +85,7 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
             }
 
             const glm::vec3 color = lights[i].color * found.obj->getColor(ray, found);
-            directLight += color * (lights[i].intensity * 10 * dotproduct / (fourPI * lightDistance * lightDistance));
+            directLight += color * (lights[i].intensity * dotproduct / (fourPI * lightDistance * lightDistance));
         }
     }
 
@@ -174,8 +176,7 @@ GLuint Renderer::renderToTextureParallel()
     const glm::vec3 xOffset = camera_plane_right * (ScreenDescriptor::WINDOW_WIDTH / 2.0f) * -1.0f;
     const glm::vec3 yOffset = camera_plane_up * (ScreenDescriptor::WINDOW_HEIGHT / 2.0f) * -1.0f;
 
-    const auto lambda = [camera_plane_right, camera_plane_up, camera_plane_center, xOffset, yOffset, this](const size_t thread_id)
-    {
+    const auto lambda = [camera_plane_right, camera_plane_up, camera_plane_center, xOffset, yOffset, this](const size_t thread_id) {
         for (size_t i = thread_id; i < ScreenDescriptor::WINDOW_HEIGHT; i += std::thread::hardware_concurrency())
         {
             const glm::vec3 xVec = float(i) * camera_plane_up + yOffset;

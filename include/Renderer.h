@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Sphere.h"
 #include "LightSource.h"
 #include "Shader.h"
 #include "Utilities.h"
+#include "Object.h"
 
 #include "ThreadPool.h"
 
@@ -45,7 +45,6 @@ public:
     void drawTextureToScreen(const GLuint texture);
     void render();
 
-    //std::vector<Sphere> spheres;
     std::vector<Object*> objects;
     std::vector<LightSource> lights;
 
@@ -61,7 +60,7 @@ private:
     const float fourPI = glm::pi<float>() * 4.0f;
     float planeDistance;
 
-    glm::vec3 ambientLight{ 0.0f, 0.0f, 0.0f };
+    glm::vec3 ambientLight{ 0.1f, 0.1f, 0.1f };
 
     GLuint quadVAO;
     GLuint quadVBO;

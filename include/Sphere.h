@@ -24,8 +24,8 @@ struct Sphere : public Object
         }
         else
         {
-            return { this, *utilities::calculateSphereIntersectionDistance(ray, *this) };
-        }       
+            return { this, *dist };
+        }
     }
 
     virtual glm::vec3 getNormal(const Ray& ray, const IntersectionInfo& info) const override

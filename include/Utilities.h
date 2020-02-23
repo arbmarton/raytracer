@@ -11,6 +11,7 @@ class Camera;
 struct Triangle;
 struct Sphere;
 struct Ray;
+struct Plane;
 
 inline std::ostream& operator<<(std::ostream& out, const glm::vec3& v)
 {
@@ -68,6 +69,7 @@ bool isPointInsideTriangle(const glm::vec3& p, const Triangle& tr);
 bool isPointInsideTriangle(const glm::vec3& p, const glm::vec3& normal, const Triangle& tr);
 
 std::optional<float> calculateSphereIntersectionDistance(const Ray& ray, const Sphere& sphere);
+std::optional<float> calculatePlaneIntersectionDistance(const Ray& ray, const Plane& plane);
 
 glm::vec3 calculateReflectionDirection(const glm::vec3& ray, const glm::vec3& normal);
 glm::vec3 calculateReflectionDirection(const Ray& ray, const glm::vec3& normal);

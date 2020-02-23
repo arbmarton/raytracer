@@ -2,6 +2,7 @@
 #include "Triangle.h"
 #include "Sphere.h"
 #include "Ray.h"
+#include "Plane.h"
 
 #include <random>
 
@@ -98,6 +99,19 @@ std::optional<float> calculateSphereIntersectionDistance(const Ray& ray, const S
     }
 }
 
+std::optional<float> calculatePlaneIntersectionDistance(const Ray& ray, const Plane& plane)
+{
+    const float dist = glm::dot(plane.normal, plane.offset - ray.origin) / glm::dot(plane.normal, ray.direction);
+    if (dist < 0)
+    {
+        return {};
+    }
+    else
+    {
+        return { dist };
+    }
+}
+
 glm::vec3 calculateReflectionDirection(const glm::vec3& ray, const glm::vec3& normal)
 {
     const float cosAlpha = glm::dot(-ray, normal) / (glm::length(ray) * glm::length(normal));
@@ -117,7 +131,7 @@ glm::vec3 calculateRefractionDirection(const glm::vec3& ray, const glm::vec3& no
     // total internal reflection
     if (c > 1.0f)
     {
-        return { 0,0,0 };
+        return { 0, 0, 0 };
     }
 
     const float sqr = sqrt(1 - c);
