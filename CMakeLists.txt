@@ -24,6 +24,7 @@ set(HEADER_FILES
 	include/LightSource.h
 	include/Object.h
 	include/Plane.h
+	include/Quad.h
 	include/Ray.h
 	include/Renderer.h
 	include/Shader.h
@@ -36,6 +37,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	src/Camera.cpp
 	src/Plane.cpp
+	src/Quad.cpp
 	src/Renderer.cpp
 	src/main.cpp
 	src/Shader.cpp

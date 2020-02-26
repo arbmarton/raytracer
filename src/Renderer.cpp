@@ -4,6 +4,7 @@
 #include "Ray.h"
 #include "Plane.h"
 #include "Sphere.h"
+#include "Quad.h"
 
 Renderer::Renderer()
     : quadshader(Shader(utilities::getShaderPath("quad.vs"), utilities::getShaderPath("quad.fs")))
@@ -27,21 +28,23 @@ Renderer::Renderer()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-    for (int i = 0; i < 10; ++i)
-    {
-        objects.push_back(new Sphere{ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f),
-                                      0.5f, 0.5f, 0.5f });
-    }
+    //for (int i = 0; i < 10; ++i)
+    //{
+    //    objects.push_back(new Sphere{ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), utilities::generateRandomFloat(1.0f, 5.0f),
+    //                                  0.5f, 0.5f, 0.5f });
+    //}
 
-    for (int i = 0; i < 10; ++i)
-    {
-        lights.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), 100 });
-    }
+    //for (int i = 0; i < 10; ++i)
+    //{
+    //    lights.push_back({ utilities::generateRandomVec3(-20, 20), utilities::generateRandomVec3(0, 1), 100 });
+    //}
 
-    //objects.push_back(new Sphere({ 0, 0, -5 }, { 1, 0, 0 }, 1.0f, 0.5f, 0.5f, 0.5f));
-    //objects.push_back(new Sphere({ 3, 0, -5 }, { 0, 0, 1 }, 1.0f, 0.5f, 0.5f, 0.5f));
-    //objects.push_back(new Plane({ 0, -5, 0 }, { 0, 1, 0 }, { 1, 1, 1 }, 1.0f, 0.0f, 0.0f));
-    //lights.push_back({ { 0, 0, 0 }, { 1, 1, 1 }, 100 });
+    objects.push_back(new Sphere({ 0, 0, -5 }, { 1, 0, 0 }, 1.0f, 0.5f, 0.5f, 0.5f));
+    objects.push_back(new Sphere({ 3, 0, -5 }, { 0, 0, 1 }, 1.0f, 0.5f, 0.5f, 0.5f));
+    objects.push_back(new Plane({ 0, -5, 0 }, { 0, 1, 0 }, { 1, 1, 1 }, 0.0f, 1.0f, 0.0f));
+    objects.push_back(new Quad({ 0,0, -10 }, { 1, 0,1 }, { 0, 1, -1 }, 5, 5, { 1,1,1 }, 0.1f, 1.0f, 0.0f));
+    lights.push_back({ { 0, 0, 0 }, { 1, 1, 1 }, 100 });
+    lights.push_back({ { 0, 10000, 0 }, { 0, 1, 0 }, 100000000});
 }
 
 glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)

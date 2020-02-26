@@ -70,6 +70,7 @@ bool isPointInsideTriangle(const glm::vec3& p, const glm::vec3& normal, const Tr
 
 std::optional<float> calculateSphereIntersectionDistance(const Ray& ray, const Sphere& sphere);
 std::optional<float> calculatePlaneIntersectionDistance(const Ray& ray, const Plane& plane);
+std::optional<float> calculatePlaneIntersectionDistance(const Ray& ray, const glm::vec3& offset, const glm::vec3& normal);
 
 glm::vec3 calculateReflectionDirection(const glm::vec3& ray, const glm::vec3& normal);
 glm::vec3 calculateReflectionDirection(const Ray& ray, const glm::vec3& normal);

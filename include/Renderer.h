@@ -54,13 +54,18 @@ private:
     constexpr static int maxRecursion = 8;
     constexpr static float ka = 0.5f;
     constexpr static float quadVertices[] = {  // positions + texcoords
-        -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f
+        -1.0f, 1.0f, 0.0f, 1.0f,
+        -1.0f,-1.0f, 0.0f, 0.0f,
+        1.0f, -1.0f,1.0f, 0.0f, 
+        -1.0f, 1.0f, 0.0f,1.0f,
+        1.0f, -1.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 1.0f, 1.0f
     };
 
     const float fourPI = glm::pi<float>() * 4.0f;
     float planeDistance;
 
-    glm::vec3 ambientLight{ 0.1f, 0.1f, 0.1f };
+    glm::vec3 ambientLight{ 0.0f, 0.0f, 0.0f };
 
     GLuint quadVAO;
     GLuint quadVBO;

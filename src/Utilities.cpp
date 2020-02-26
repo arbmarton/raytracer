@@ -112,6 +112,19 @@ std::optional<float> calculatePlaneIntersectionDistance(const Ray& ray, const Pl
     }
 }
 
+std::optional<float> calculatePlaneIntersectionDistance(const Ray& ray, const glm::vec3& offset, const glm::vec3& normal)
+{
+    const float dist = glm::dot(normal, offset - ray.origin) / glm::dot(normal, ray.direction);
+    if (dist < 0)
+    {
+        return {};
+    }
+    else
+    {
+        return { dist };
+    }
+}
+
 glm::vec3 calculateReflectionDirection(const glm::vec3& ray, const glm::vec3& normal)
 {
     const float cosAlpha = glm::dot(-ray, normal) / (glm::length(ray) * glm::length(normal));
