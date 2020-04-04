@@ -14,6 +14,11 @@ Quad::Quad(const glm::vec3& upperLeft, const glm::vec3& u, const glm::vec3& v, c
 
 IntersectionInfo Quad::intersect(const Ray& ray)
 {
+	if (glm::dot(ray.direction, normal) > 0)
+	{
+		return { nullptr, std::numeric_limits<float>::max() };
+	}
+
 	const std::optional<float> distance =  utilities::calculatePlaneIntersectionDistance(ray, upper.a, normal);
 	if (!distance)
 	{

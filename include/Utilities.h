@@ -19,6 +19,23 @@ inline std::ostream& operator<<(std::ostream& out, const glm::vec3& v)
     return out;
 }
 
+struct Globals
+{
+    static Globals& instance()
+    {
+        static Globals* ptr{ nullptr };
+
+        if (!ptr)
+        {
+            ptr = new Globals();
+        }
+
+        return *ptr;
+    }
+
+    bool antialiasing = true;
+};
+
 struct CursorPosDescriptor
 {
     float lastX;
@@ -42,8 +59,8 @@ private:
 
 struct ScreenDescriptor
 {
-    constexpr static uint32_t WINDOW_WIDTH = 1024;
-    constexpr static uint32_t WINDOW_HEIGHT = 768;
+    constexpr static uint32_t WINDOW_WIDTH = 1920;
+    constexpr static uint32_t WINDOW_HEIGHT = 1080;
 
 private:
     ScreenDescriptor() = delete;

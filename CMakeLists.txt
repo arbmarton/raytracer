@@ -8,10 +8,12 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/glm/)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/glad/)
 
 set(VERTEX_SHADERS
+	shaders/fxaa.vs
 	shaders/quad.vs
 )
 
 set(FRAGMENT_SHADERS
+	shaders/fxaa.fs
 	shaders/quad.fs
 )
 

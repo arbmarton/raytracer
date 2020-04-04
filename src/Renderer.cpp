@@ -8,7 +8,11 @@
 
 Renderer::Renderer()
     : quadshader(Shader(utilities::getShaderPath("quad.vs"), utilities::getShaderPath("quad.fs")))
+    , fxaashader(Shader(utilities::getShaderPath("fxaa.vs"), utilities::getShaderPath("fxaa.fs")))
 {
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
+
     const float fov = glm::radians(90.0f);  // field of view in degrees
     const float halfFov = fov / 2;
 
@@ -42,7 +46,7 @@ Renderer::Renderer()
     objects.push_back(new Sphere({ 0, 0, -5 }, { 1, 0, 0 }, 1.0f, 0.5f, 0.5f, 0.5f));
     objects.push_back(new Sphere({ 3, 0, -5 }, { 0, 0, 1 }, 1.0f, 0.5f, 0.5f, 0.5f));
     objects.push_back(new Plane({ 0, -5, 0 }, { 0, 1, 0 }, { 1, 1, 1 }, 0.0f, 1.0f, 0.0f));
-    objects.push_back(new Quad({ 0,0, -10 }, { 1, 0,1 }, { 0, 1, -1 }, 5, 5, { 1,1,1 }, 0.1f, 1.0f, 0.0f));
+    objects.push_back(new Quad({ -5,6, -10 }, { 1, 0,0 }, { 0, 0, 1 }, 5, 5, { 1,1,1 }, 0.0f, 0.0f, 1.0f));
     lights.push_back({ { 0, 0, 0 }, { 1, 1, 1 }, 100 });
     lights.push_back({ { 0, 10000, 0 }, { 0, 1, 0 }, 100000000});
 }
@@ -61,7 +65,7 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
     }
 
     const glm::vec3 intersectionPoint = ray.origin + ray.direction * found.distance;
-    const glm::vec3 sphereNormal = found.obj->getNormal(ray, found);
+    const glm::vec3 intersectionNormal = found.obj->getNormal(ray, found);
 
     // TODO: emission
 
@@ -80,7 +84,7 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
         IntersectionInfo blockingSphere = intersect(toLightRay);
         if (!blockingSphere.obj || blockingSphere.distance > lightDistance)
         {
-            const float dotproduct = glm::dot(sphereNormal, toLightDir);
+            const float dotproduct = glm::dot(intersectionNormal, toLightDir);
 
             if (dotproduct <= 0.0f)
             {
@@ -94,14 +98,14 @@ glm::vec3 Renderer::trace(const Ray& ray, const int recursionDepth)
 
     if (found.obj->kr > 0)
     {
-        const glm::vec3 reflectionDir = utilities::calculateReflectionDirection(ray, sphereNormal);
+        const glm::vec3 reflectionDir = utilities::calculateReflectionDirection(ray, intersectionNormal);
         const Ray reflectedRay{ intersectionPoint + reflectionDir * 0.01f, reflectionDir };
         reflectedLight = found.obj->kr * trace(reflectedRay, recursionDepth + 1);
     }
 
     if (found.obj->kt > 0)
     {
-        const glm::vec3 refractionDir = utilities::calculateRefractionDirection(ray, sphereNormal, 1.0f / 1.52f);
+        const glm::vec3 refractionDir = utilities::calculateRefractionDirection(ray, intersectionNormal, 1.0f / 1.52f);
         const Ray refractedRay{ intersectionPoint + refractionDir * 0.01f, refractionDir };
         refractedLight = found.obj->kt * trace(refractedRay, recursionDepth + 1);
     }
@@ -232,7 +236,16 @@ GLuint Renderer::renderToTextureParallel()
 
 void Renderer::drawTextureToScreen(const GLuint texture)
 {
-    glUseProgram(quadshader.getID());
+    if (Globals::instance().antialiasing)
+    {
+        fxaashader.setInt("SCREEN_WIDTH", ScreenDescriptor::WINDOW_WIDTH);
+        fxaashader.setInt("SCREEN_HEIGHT", ScreenDescriptor::WINDOW_HEIGHT);
+        glUseProgram(fxaashader.getID());
+    }
+    else
+    {
+        glUseProgram(quadshader.getID());
+    }
     glBindVertexArray(quadVAO);
     glBindTexture(GL_TEXTURE_2D, texture);
     glDrawArrays(GL_TRIANGLES, 0, 6);

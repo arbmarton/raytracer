@@ -71,6 +71,7 @@ private:
     GLuint quadVBO;
 
     Shader quadshader;
+    Shader fxaashader;
 
     constexpr static int pixelcount = ScreenDescriptor::WINDOW_WIDTH * ScreenDescriptor::WINDOW_HEIGHT * 3;
     unsigned char* imgArray = new unsigned char[pixelcount];

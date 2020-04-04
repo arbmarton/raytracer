@@ -45,6 +45,22 @@ void processInput(GLFWwindow* window)
     {
         Camera::intance().moveRight();
     }
+
+    //static int oldBstate = GLFW_RELEASE;
+    //const int currentBstate = glfwGetKey(window, GLFW_KEY_B);
+    //if (currentBstate == GLFW_RELEASE && oldBstate == GLFW_PRESS)
+    //{
+    //    Renderer::instance().setApplyBlur(!Renderer::instance().getApplyBlur());
+    //}
+    //oldBstate = currentBstate;
+
+    static int oldSpaceState = GLFW_RELEASE;
+    const int currentSpaceState = glfwGetKey(window, GLFW_KEY_SPACE);
+    if (currentSpaceState == GLFW_RELEASE && oldSpaceState == GLFW_PRESS)
+    {
+        Globals::instance().antialiasing = !Globals::instance().antialiasing;
+    }
+    oldSpaceState = currentSpaceState;
 }
 
 void mouse_callback(GLFWwindow* window, const double xpos, const double ypos)
@@ -97,6 +113,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     GLFWwindow* window = glfwCreateWindow(ScreenDescriptor::WINDOW_WIDTH, ScreenDescriptor::WINDOW_HEIGHT, "Raytracer", nullptr, nullptr);
     if (window == nullptr)
@@ -120,7 +137,6 @@ int main()
 
     // Render loop setup
     std::chrono::steady_clock::time_point lastTime = std::chrono::steady_clock::now();
-    glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
         // Update
